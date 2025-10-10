@@ -1,6 +1,6 @@
 {
     "type": "micro",
-    "wake_word": "GLaDOS",
+    "wake_word": "Okay GLaDOS",
     "author": "Nick Iacullo",
     "model": "glados.tflite",
     "trained_languages": [
