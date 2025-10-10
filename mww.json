@@ -2,7 +2,7 @@
     "type": "micro",
     "wake_word": "GLaDOS",
     "author": "Nick Iacullo",
-    "model": "fake.tflite",
+    "model": "glados.tflite",
     "trained_languages": [
         "en"
     ],
