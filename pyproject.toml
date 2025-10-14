@@ -16,7 +16,6 @@ dependencies = [
     # "git+https://github.com/kahrendt/microWakeWord.git@ef8befc49fbe0aac2dd046a3b0b1264cfc73eff1",
     "audio-metadata",
     "pymicro-features; sys_platform == 'darwin'",
-    "piper-sample-generator",
     "microwakeword",
 ]
 
@@ -29,6 +28,5 @@ dev = [
 [tool.uv.sources]
 audio-metadata = { git = "https://github.com/whatsnowplaying/audio-metadata", rev = "d4ebb238e6a401bb1a5aaaac60c9e2b3cb30929f" }
 pymicro-features = { git = "https://github.com/puddly/pymicro-features", rev = "02de1b1fb32887aed952b3ac5e0c92d77d3b3166" }
-piper-sample-generator = { git = "https://github.com/rhasspy/piper-sample-generator.git", rev="66ec23fa497823a75577d25c2ed6d77a04db9413" }
 # This might need to be installed in editable mode:
 microwakeword = { path = "libs/microWakeWord", editable = true}
