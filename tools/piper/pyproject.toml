@@ -1,0 +1,21 @@
+# Separate environment for piper-sample-generator, used by the notebook via
+# `uv run --project tools/piper ...`.
+# It can't live in the main project because it pins audiomentations==0.33.0,
+# which conflicts with microWakeWord's newer version.
+# The PyPI torch wheel includes CUDA, so the .pt generator model runs on the GPU.
+[project]
+name = "piper-env"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "piper-sample-generator",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+# Pinned to the commit from upstream PR #21, which packages `piper_train`
+# (v3.2.0 on PyPI imports it but leaves it out; see upstream issue #20).
+# Switch back to the PyPI release once a fixed version is published.
+piper-sample-generator = { git = "https://github.com/rhasspy/piper-sample-generator", rev = "940b483c59d0ce0725d67e90718892b1d951114c" }

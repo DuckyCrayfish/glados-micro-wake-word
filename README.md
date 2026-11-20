@@ -30,6 +30,9 @@
   `.venv/.../nvidia/cusolver/lib` to `LD_LIBRARY_PATH`. Without it, TF silently falls back to CPU.
 - RTX 50-series (compute capability 12.0) isn't in TensorFlow's prebuilt kernels, so CUDA kernels
   are JIT-compiled from PTX the first time. Expect a slow first run; later runs use the cache in `~/.nv`.
-- piper-sample-generator runs in its own isolated environment (`uv run --no-project --with ...`)
-  because it pins `audiomentations==0.33.0`, which conflicts with microWakeWord. The submodule
-  is also put on `PYTHONPATH` because v3.2.0 imports `piper_train` without packaging it.
+- piper-sample-generator runs in its own uv project, [tools/piper](tools/piper), because it pins
+  `audiomentations==0.33.0`, which conflicts with microWakeWord. It's pinned to the commit from
+  upstream PR #21, because the v3.2.0 release imports `piper_train` without packaging it.
+- Samples are generated with the PyTorch generator model (`en_US-libritts_r-medium.pt`), which
+  runs batched on the GPU (~250 samples/s on an RTX 5070 Ti vs ~20/s for the .onnx voice on CPU).
+  Running the .onnx voice with `onnxruntime-gpu` was tried and was slower than CPU.
