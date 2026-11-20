@@ -8,7 +8,9 @@ dependencies = [
     "ipywidgets>=8.1.7",
     "torchaudio>=2.5.0",
     "torchcodec>=0.7.0",
-    "tensorflow~=2.16.2",
+    "tensorflow~=2.21.0",
+    # TF 2.21 no longer pulls in tensorboard, but microWakeWord uses tf.summary.
+    "tensorboard",
     "torch~=2.8.0",
     "piper-phonemize-cross==1.2.1",
     # `audio-metadata` is installed from a fork to unpin `attrs` from a version that breaks Jupyter

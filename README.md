@@ -26,5 +26,10 @@
 
 - Ran in WSL v2
 - Had to install CUDA in WSL (Microsoft has documentation on this)
-- Had to install tensorflow~=2.16.0 for training step to work, otherwise it failed silently with
-  status code 139 due to CUDA library issues.
+- TensorFlow doesn't find the pip-installed `libcusolver` on its own, so the training cell prepends
+  `.venv/.../nvidia/cusolver/lib` to `LD_LIBRARY_PATH`. Without it, TF silently falls back to CPU.
+- RTX 50-series (compute capability 12.0) isn't in TensorFlow's prebuilt kernels, so CUDA kernels
+  are JIT-compiled from PTX the first time. Expect a slow first run; later runs use the cache in `~/.nv`.
+- piper-sample-generator runs in its own isolated environment (`uv run --no-project --with ...`)
+  because it pins `audiomentations==0.33.0`, which conflicts with microWakeWord. The submodule
+  is also put on `PYTHONPATH` because v3.2.0 imports `piper_train` without packaging it.
