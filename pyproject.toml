@@ -15,7 +15,7 @@ dependencies = [
     "piper-phonemize-cross==1.2.1",
     # `audio-metadata` is installed from a fork to unpin `attrs` from a version that breaks Jupyter
     # "git+https://github.com/whatsnowplaying/audio-metadata@d4ebb238e6a401bb1a5aaaac60c9e2b3cb30929f",
-    # "git+https://github.com/kahrendt/microWakeWord.git@ef8befc49fbe0aac2dd046a3b0b1264cfc73eff1",
+    # "git+https://github.com/OHF-Voice/micro-wake-word.git@ef8befc49fbe0aac2dd046a3b0b1264cfc73eff1",
     "audio-metadata",
     "pymicro-features>=2.0",
     "microwakeword",
