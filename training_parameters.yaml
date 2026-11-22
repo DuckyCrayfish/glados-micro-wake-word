@@ -38,10 +38,14 @@ freq_mask_max_size:
 - 0
 learning_rates:
 - 0.001
+- 0.0001
+- 1.0e-05
 maximization_metric: average_viable_recall
 minimization_metric: null
 negative_class_weight:
 - 20
+- 40
+- 80
 positive_class_weight:
 - 1
 target_minimization: 0.9
@@ -51,5 +55,7 @@ time_mask_max_size:
 - 0
 train_dir: output
 training_steps:
-- 100000
+- 80000
+- 10000
+- 10000
 window_step_ms: 10
