@@ -916,7 +916,7 @@ def _(config, run):
     # Training runs tools/fast_train.py, which trains like microWakeWord's own
     # `python -m microwakeword.model_train_eval --train 1` but keeps the GPU busy: worker
     # processes build the training batches ahead of time, and the validation sets are read
-    # once and kept in memory (about 4 GB) instead of being read from disk at every validation.
+    # once and kept in memory instead of being read from disk at every validation.
     # Every 100 steps it prints the training speed and how much of the time it waited for
     # batches, and each validation's log line says how long it took.
     # Converting and testing run microwakeword.model_train_eval itself.
@@ -937,7 +937,7 @@ def _(config, run):
     #   "per_sample"  Each sample's loss is weighted by its class weight. A negative weight of
     #                 20 then really makes a false positive cost 20 times a missed wake word,
     #                 which moves the model's scores a lot, so choose the weights again.
-    CLASS_WEIGHTS = "upstream"
+    CLASS_WEIGHTS = "per_sample"
 
     # The model. Training and converting both take these.
     MODEL_ARGS = [
