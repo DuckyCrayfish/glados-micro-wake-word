@@ -1,0 +1,75 @@
+# Held-out test phrases. The model is NEVER trained on these.
+# tools/near_miss_check.py reads this file by default, so its numbers say how the
+# model does on sound-alikes it has not seen. Keep it disjoint from
+# near_miss_phrases.txt (the check script refuses to run if the two overlap).
+#
+# Same format as near_miss_phrases.txt: one phrase per line, "# --- Name ---" starts a group.
+
+# --- "okay" opener, then something else ---
+okay no problem
+okay all good
+okay makes sense
+okay go back
+okay good morning
+okay good luck
+okay great job
+okay do it
+okay noted
+okay let's do this
+okay go home
+okay one more
+okay thank you very much
+
+# --- Other ways of saying okay ---
+alright then
+oh okay then
+okay, alright
+well alright
+very well
+all righty
+
+# --- "glad ..." (shares the GLAD syllable) ---
+glad you like it
+glad it worked
+glad you called
+glad it's Friday
+so glad it's over
+okay glad to see you
+okay glad you made it
+okay glad that's done
+Gladys said hi
+
+# --- Ends like "-dose" / "-loss" / "-glass" ---
+okay class is over
+okay close those
+okay grab the gloves
+okay gloves on
+okay the glasses
+okay clothes are in the dryer
+okay those are mine
+okay toast is ready
+okay the boss is here
+okay ghosts
+okay grass
+okay dose it
+okay no those
+okay go to Dallas
+okay Claus
+
+# --- Unrelated speech (control) ---
+# Nothing like the wake word. These show whether a model reacts to the sounds
+# of the phrase or just to clean synthetic speech.
+what time is it
+turn on the lights
+the weather is nice today
+please pass the salt
+I'll see you tomorrow
+can you hear me
+it's almost dinner time
+he went to the store
+that sounds like a plan
+where did I leave my keys
+have a great day
+the movie starts at eight
+I think it's going to rain
+what's for dinner

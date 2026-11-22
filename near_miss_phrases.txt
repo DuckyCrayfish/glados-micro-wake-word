@@ -1,0 +1,94 @@
+# Training negatives: everyday phrases that sit near "okay GLaDOS" (oh-KAY GLAD-ohs).
+# The notebook turns these into TTS clips and trains on them as "not the wake word".
+#
+# One phrase per line. Blank lines and # comments are ignored, except that a header
+# like "# --- Name ---" starts a group (only used for reading the file; the notebook
+# ignores groups). Plain text, not phonemes: Piper/espeak reads these like English.
+#
+# Phrases the model is TESTED on live in near_miss_holdout.txt and must never be
+# copied in here, or the check stops measuring anything.
+#
+# Deliberately left out: "hey GLaDOS" and "GLaDOS" on their own. Whether those
+# should trigger is a product decision, not a sound-alike.
+
+# --- "okay" opener, then something else ---
+okay
+okay then
+okay so
+okay cool
+okay thanks
+okay thank you
+okay got it
+okay go ahead
+okay go on
+okay good
+okay great
+okay fine
+okay sure
+okay perfect
+okay sounds good
+okay let's go
+okay we're good
+okay one second
+okay let me see
+okay show me
+okay what's next
+okay go for it
+okay good idea
+okay good night
+okay see you later
+okay I'll go
+okay go to sleep
+okay let's go to the store
+okay Google
+hey Google
+
+# --- "glad ..." (shares the GLAD syllable) ---
+glad to hear it
+glad you're here
+glad you could make it
+glad to be home
+glad to help
+glad that's over
+so glad you came
+gladly
+okay glad to hear it
+okay I'm glad
+okay glad that works
+okay glad you're here
+okay glad it's done
+okay glad you're okay
+okay gladly
+
+# --- Ends like "-dose" / "-loss" / "-glass" ---
+okay class
+okay the class
+okay glass
+okay glasses
+okay grab a glass
+okay clean the glass
+okay close it
+okay close the door
+okay close the blinds
+okay it's closed
+okay clothes
+okay the clothes are dry
+okay those
+okay those ones
+okay all those
+okay grab those
+okay pick those up
+okay take a dose
+okay the dose
+okay does it
+okay that does it
+okay dogs
+okay gloves
+okay ladies
+okay Dallas
+okay boss
+okay toast
+okay ghost
+okay gross
+okay gas
+okay cross

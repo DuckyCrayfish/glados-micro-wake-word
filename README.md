@@ -20,6 +20,17 @@
 4. Profit.
    
 
+## Near-miss negatives
+
+Everyday phrases that sound a bit like the wake word ("okay thanks", "okay class", "glad to hear it")
+are trained on as negatives, so the model doesn't learn "okay" plus anything.
+
+- `near_miss_phrases.txt` is what the notebook trains on.
+- `near_miss_holdout.txt` is never trained on. `uv run python tools/near_miss_check.py` runs the
+  deployed model and the latest run over it and reports how often each one fires, by group. It
+  uses synthetic speech only, so treat it as a comparison between models, not a real-world false
+  positive rate. The script refuses to run if the two files share a phrase.
+
 ## Notes
 
 **Here are a few random notes on how I got it to work:**
