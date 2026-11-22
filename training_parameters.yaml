@@ -59,9 +59,9 @@ time_mask_count:
 - 0
 time_mask_max_size:
 - 0
-train_dir: output/04-near-miss
+train_dir: output/05-fast-loader
 training_steps:
-- 80000
-- 10000
-- 10000
+- 160000
+- 20000
+- 20000
 window_step_ms: 10

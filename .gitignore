@@ -9,6 +9,9 @@ wheels/
 # Virtual environments
 .venv
 
+# marimo session snapshots (rendered outputs, regenerated on every run)
+__marimo__/
+
 # Project Specific
 trained_models
 output
