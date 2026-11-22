@@ -1,0 +1,23 @@
+# Separate environment for Kokoro-82M TTS, used by the notebook via
+# `uv run --project tools/kokoro ...`.
+# Kokoro is StyleTTS2-based (different architecture and text frontend from Piper's
+# VITS), so mixing its clips in keeps the model from learning Piper's voice artifacts.
+# The PyPI torch wheel includes CUDA, so it runs on the GPU.
+[project]
+name = "kokoro-env"
+version = "0.1.0"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "kokoro>=0.9.4",
+    "soundfile",
+    "scipy",
+    "numpy",
+    # misaki downloads this itself with `pip`, which uv environments don't have.
+    "en-core-web-sm",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+en-core-web-sm = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" }

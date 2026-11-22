@@ -31,6 +31,13 @@ are trained on as negatives, so the model doesn't learn "okay" plus anything.
   uses synthetic speech only, so treat it as a comparison between models, not a real-world false
   positive rate. The script refuses to run if the two files share a phrase.
 
+## Voice models
+
+Wake word and near-miss clips come from the `voice_models` list in the notebook. Each entry has
+a unique `name` (its folder under `data/generated_samples/`), a `type` (`piper` or `kokoro`) and a
+`samples` count. The same `type` can be used more than once, for example two Piper voices. Piper (VITS) and Kokoro-82M (StyleTTS2) are
+different architectures, so the model doesn't learn one engine's voice artifacts.
+
 ## Notes
 
 **Here are a few random notes on how I got it to work:**
