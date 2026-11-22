@@ -26,6 +26,12 @@ features:
   truncation_strategy: random
   truth: false
   type: mmap
+- features_dir: data/near_miss_features
+  penalty_weight: 1.0
+  sampling_weight: 3.0
+  truncation_strategy: truncate_start
+  truth: false
+  type: mmap
 - features_dir: data/negative_datasets/dinner_party_eval
   penalty_weight: 1.0
   sampling_weight: 0.0
@@ -44,8 +50,8 @@ maximization_metric: average_viable_recall
 minimization_metric: null
 negative_class_weight:
 - 20
-- 40
-- 80
+- 20
+- 20
 positive_class_weight:
 - 1
 target_minimization: 0.9
@@ -53,7 +59,7 @@ time_mask_count:
 - 0
 time_mask_max_size:
 - 0
-train_dir: output
+train_dir: output/04-near-miss
 training_steps:
 - 80000
 - 10000

@@ -119,6 +119,12 @@ def clip_score(model_path: str, audio: np.ndarray, window: int) -> float:
     return float(np.convolve(probs, np.ones(window) / window, mode="valid").max())
 
 
+def latest_run_model() -> Path | None:
+    """The quantized streaming model of the most recently modified run in output/<run>/."""
+    models = (ROOT / "output").glob("*/tflite_stream_state_internal_quant/stream_state_internal_quant.tflite")
+    return max(models, key=lambda p: p.stat().st_mtime, default=None)
+
+
 def parse_model(spec: str) -> tuple[str, str, float]:
     """NAME=PATH@CUTOFF -> (name, path, reference cutoff)."""
     name, rest = spec.split("=", 1)
@@ -142,9 +148,11 @@ def main() -> None:
     args = parser.parse_args()
 
     specs = args.model or [
-        f"deployed={ROOT / 'models/glados.tflite'}@{deployed['probability_cutoff']}",
-        f"latest run={ROOT / 'output/tflite_stream_state_internal_quant/stream_state_internal_quant.tflite'}@0.9",
+        f"deployed={ROOT / 'models/glados.tflite'}@{deployed['probability_cutoff']}"
     ]
+    if not args.model and (latest := latest_run_model()):
+        # No manifest cutoff exists for a run, so 0.9 is a stand-in for the per-phrase table.
+        specs.append(f"{latest.parents[1].name}={latest}@0.9")
     models = [parse_model(s) for s in specs]
 
     grouped = read_phrases(args.phrases)
