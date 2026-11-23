@@ -27,8 +27,8 @@ features:
   truth: false
   type: mmap
 - features_dir: data/near_miss_features
-  penalty_weight: 1.0
-  sampling_weight: 3.0
+  penalty_weight: 1.5
+  sampling_weight: 1.0
   truncation_strategy: truncate_start
   truth: false
   type: mmap

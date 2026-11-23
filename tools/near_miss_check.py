@@ -46,17 +46,20 @@ NOISE_SCALE_WS = "0.2"
 
 
 GROUP_HEADER = re.compile(r"^#\s*---\s*(.+?)\s*---\s*$")
+# near_miss_phrases.txt can give a phrase a share of the clips with a trailing "*N".
+WEIGHT_SUFFIX = re.compile(r"\s+\*\d+$")
 
 
 def read_phrases(path: Path) -> list[tuple[str, str]]:
-    """(group, phrase) pairs. A "# --- Name ---" comment starts a new group."""
+    """(group, phrase) pairs. A "# --- Name ---" comment starts a new group. A trailing
+    "*N" weight is dropped."""
     group, pairs = "ungrouped", []
     for raw in path.read_text(encoding="utf-8").splitlines():
         line = raw.strip()
         if header := GROUP_HEADER.match(line):
             group = header.group(1)
         elif line and not line.startswith("#"):
-            pairs.append((group, line))
+            pairs.append((group, WEIGHT_SUFFIX.sub("", line)))
     return pairs
 
 

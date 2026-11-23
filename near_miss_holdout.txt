@@ -40,21 +40,22 @@ okay glad that's done
 Gladys said hi
 
 # --- Ends like "-dose" / "-loss" / "-glass" ---
-okay class is over
-okay close those
-okay grab the gloves
-okay gloves on
-okay the glasses
-okay clothes are in the dryer
-okay those are mine
-okay toast is ready
-okay the boss is here
-okay ghosts
+# Every ending word here is absent from near_miss_phrases.txt (no "okay class is over"
+# next to a trained "okay class"), so these test the sound, not the trained phrases.
 okay grass
-okay dose it
-okay no those
-okay go to Dallas
 okay Claus
+okay floss
+okay gloss
+okay moss
+okay hose
+okay nose
+okay rose
+okay chose
+okay Atlas
+okay Nicholas
+okay Dolores
+okay Gladstone
+okay lotus
 
 # --- Unrelated speech (control) ---
 # Nothing like the wake word. These show whether a model reacts to the sounds

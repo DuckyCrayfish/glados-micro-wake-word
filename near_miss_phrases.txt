@@ -5,6 +5,12 @@
 # like "# --- Name ---" starts a group (only used for reading the file; the notebook
 # ignores groups). Plain text, not phonemes: Piper/espeak reads these like English.
 #
+# A trailing "*N" gives a phrase N times the usual share of the clips (default 1). The
+# closest sound-alikes get more: bare "okay" (the first half of the wake word) *4, and
+# "okay glad ..." and the "-dose/-loss/-glass" endings *2. The notebook also says each
+# phrase with the same mix of punctuation the wake word prompts use ("?", "!", "." and
+# "okay, ..."), so intonation can't tell the wake word from a near-miss.
+#
 # Phrases the model is TESTED on live in near_miss_holdout.txt and must never be
 # copied in here, or the check stops measuring anything.
 #
@@ -12,7 +18,7 @@
 # should trigger is a product decision, not a sound-alike.
 
 # --- "okay" opener, then something else ---
-okay
+okay *4
 okay then
 okay so
 okay cool
@@ -52,43 +58,43 @@ glad to help
 glad that's over
 so glad you came
 gladly
-okay glad to hear it
+okay glad to hear it *2
 okay I'm glad
-okay glad that works
-okay glad you're here
-okay glad it's done
-okay glad you're okay
-okay gladly
+okay glad that works *2
+okay glad you're here *2
+okay glad it's done *2
+okay glad you're okay *2
+okay gladly *2
 
 # --- Ends like "-dose" / "-loss" / "-glass" ---
-okay class
-okay the class
-okay glass
-okay glasses
-okay grab a glass
-okay clean the glass
-okay close it
-okay close the door
-okay close the blinds
-okay it's closed
-okay clothes
-okay the clothes are dry
-okay those
-okay those ones
-okay all those
-okay grab those
-okay pick those up
-okay take a dose
-okay the dose
-okay does it
-okay that does it
-okay dogs
-okay gloves
-okay ladies
-okay Dallas
-okay boss
-okay toast
-okay ghost
-okay gross
-okay gas
-okay cross
+okay class *2
+okay the class *2
+okay glass *2
+okay glasses *2
+okay grab a glass *2
+okay clean the glass *2
+okay close it *2
+okay close the door *2
+okay close the blinds *2
+okay it's closed *2
+okay clothes *2
+okay the clothes are dry *2
+okay those *2
+okay those ones *2
+okay all those *2
+okay grab those *2
+okay pick those up *2
+okay take a dose *2
+okay the dose *2
+okay does it *2
+okay that does it *2
+okay dogs *2
+okay gloves *2
+okay ladies *2
+okay Dallas *2
+okay boss *2
+okay toast *2
+okay ghost *2
+okay gross *2
+okay gas *2
+okay cross *2

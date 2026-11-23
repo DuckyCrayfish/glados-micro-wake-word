@@ -9,7 +9,9 @@ __generated_with = "0.25.2"
 app = marimo.App(width="medium")
 
 with app.setup:
+    import hashlib
     import os
+    import random
     import re
     import shutil
     import signal
@@ -680,7 +682,10 @@ def _(clips_dir, generate_clips, trim_clips, voice_models):
     NEAR_MISS_SAMPLES_DIR = "data/near_miss_samples"
     # The features for these clips take about 8 GB per 10,000 clips (the wake word
     # clips take about 0.8 MB each). More clips add more voices per phrase, not more phrases.
-    NEAR_MISS_SAMPLES = 10_000
+    # Training sees each near-miss clip many times, so a small set gets memorized (the model
+    # learns those voices, not the sound-alike). 20,000 clips, sampled at 1.0 in the config
+    # cell, gives each near-miss spectrogram about twice the reuse of a wake word one.
+    NEAR_MISS_SAMPLES = 20_000
     # Split between the voice models in the same proportions as their wake word "samples".
     near_miss_counts = {
         m["name"]: round(
@@ -694,15 +699,61 @@ def _(clips_dir, generate_clips, trim_clips, voice_models):
     )
 
     os.makedirs(NEAR_MISS_SAMPLES_DIR, exist_ok=True)
-    # The generators read one phrase per line, so write a copy without comments and group headers.
-    _phrases = [
-        line.strip()
-        for line in Path(NEAR_MISS_PHRASES).read_text(encoding="utf-8").splitlines()
-        if line.strip() and not line.strip().startswith("#")
-    ]
+    # The generators read one prompt per line and clip i says line i % (number of lines), so
+    # turn each phrase into 6 x its "*N" weight lines. Comments, group headers and weights are
+    # dropped. The wake word is spoken with "?", "!", "." and "okay, ..." variants, so the
+    # near-misses get the same mix of them: plain text with one intonation would let the
+    # model tell wake word from near-miss by the intonation alone.
+    _weighted_phrases = []
+    for _line in Path(NEAR_MISS_PHRASES).read_text(encoding="utf-8").splitlines():
+        _line = _line.strip()
+        if not _line or _line.startswith("#"):
+            continue
+        _match = re.fullmatch(r"(.+?)\s+\*(\d+)", _line)
+        _weighted_phrases.append(
+            (_match.group(1), int(_match.group(2))) if _match else (_line, 1)
+        )
+
+    _prompts = []
+    for _phrase, _weight in _weighted_phrases:
+        _comma = re.sub(r"^okay ", "okay, ", _phrase)
+        _capital = _phrase[0].upper() + _phrase[1:]
+        _ways = list(
+            dict.fromkeys(
+                [
+                    _phrase,
+                    _phrase + "?",
+                    _comma + "!",
+                    _capital + ".",
+                    _comma,
+                    _phrase + "!",
+                ]
+            )
+        )
+        _prompts += [_ways[i % len(_ways)] for i in range(6 * _weight)]
+    # Shuffled (the same way every time) so neighbouring clips are different phrases, and a
+    # phrase doesn't always land on the same Piper noise/length combination.
+    random.Random(0).shuffle(_prompts)
+
+    # Kokoro skips clips that already exist, so after the phrases change, the old clips would
+    # stay and be trained on next to the new ones. Refuse to continue until they are deleted.
+    _fingerprint = hashlib.sha256("\n".join(_prompts).encode()).hexdigest()
+    _fingerprint_path = Path(NEAR_MISS_SAMPLES_DIR) / ".phrases_sha256"
+    _has_clips = any(Path(NEAR_MISS_SAMPLES_DIR).glob("*/*.wav"))
+    if _has_clips and (
+        not _fingerprint_path.exists() or _fingerprint_path.read_text() != _fingerprint
+    ):
+        raise RuntimeError(
+            f"The clips in {NEAR_MISS_SAMPLES_DIR} were made from different near-miss "
+            f"phrases. Delete {NEAR_MISS_SAMPLES_DIR} and data/near_miss_features, then run "
+            "this cell again."
+        )
+
     _phrases_file = "data/near_miss_phrases.txt"
-    Path(_phrases_file).write_text("\n".join(_phrases) + "\n", encoding="utf-8")
-    print(f"{len(_phrases)} phrases, {NEAR_MISS_SAMPLES} clips")
+    Path(_phrases_file).write_text("\n".join(_prompts) + "\n", encoding="utf-8")
+    print(
+        f"{len(_weighted_phrases)} phrases, {len(_prompts)} prompts, {NEAR_MISS_SAMPLES} clips"
+    )
 
     # Same voices and settings as the wake word samples. Plain text, not phonemes.
     for _voice_model in voice_models:
@@ -714,6 +765,7 @@ def _(clips_dir, generate_clips, trim_clips, voice_models):
         )
 
     trim_clips(NEAR_MISS_SAMPLES_DIR, near_miss_counts)
+    _fingerprint_path.write_text(_fingerprint)
     return (NEAR_MISS_SAMPLES_DIR,)
 
 
@@ -736,7 +788,7 @@ def _(
     near_miss_clips = Clips(
         input_directory=NEAR_MISS_SAMPLES_DIR,
         file_pattern="*/*.wav",
-        max_clip_duration_s=None,
+        max_clip_duration_s=1.8,
         remove_silence=False,
         random_split_seed=10,
         split_count=0.1,
@@ -834,10 +886,13 @@ def _():
             },
             {
                 # Everyday phrases that sound a bit like the wake word, trained on as negatives.
-                # Weighted like the wake word clips, so batches hold as many near-misses as positives.
+                # Sampled less than the wake word clips (1.0 vs 3.0): there are far fewer
+                # unique near-miss clips, and at equal weights each is drawn ~10x as often as a
+                # wake word clip, which gets memorized. They are the hardest negatives, so a
+                # mistake on one costs more than on other negatives.
                 "features_dir": "data/near_miss_features",
-                "sampling_weight": 3.0,
-                "penalty_weight": 1.0,
+                "sampling_weight": 1.0,
+                "penalty_weight": 1.5,
                 "truth": False,
                 "truncation_strategy": "truncate_start",
                 "type": "mmap",
