@@ -871,14 +871,17 @@ def _():
         # Learning rates for Adam optimizer - list that corresponds to training steps
         "learning_rates": [0.001, 0.0001, 0.00001],
         "batch_size": 128,
-        # SpecAugment - list that corresponds to training steps
-        "time_mask_max_size": [0],
-        # SpecAugment - list that corresponds to training steps
-        "time_mask_count": [0],
-        # SpecAugment - list that corresponds to training steps
-        "freq_mask_max_size": [0],
-        # SpecAugment - list that corresponds to training steps
-        "freq_mask_count": [0],
+        # SpecAugment - lists that correspond to training steps. Each training spectrogram gets
+        # time_mask_count blocks of up to time_mask_max_size frames (10 ms each) zeroed, and
+        # freq_mask_count blocks of up to freq_mask_max_size mel bins zeroed. Validation is
+        # never masked. Runs 1 to 5 had these all at 0, and their train loss fell steadily
+        # while validation loss flattened (a 5 to 10 times gap): the model was memorizing the
+        # training clips. Masking is the regularizer against that, so compare this run's
+        # train and validation loss gap with run 05's. All 0 turns it off.
+        "time_mask_max_size": [5],
+        "time_mask_count": [2],
+        "freq_mask_max_size": [3],
+        "freq_mask_count": [2],
         # Test the validation sets after every this many steps
         "eval_step_interval": 500,
         # Maximum length of wake word that the streaming model will accept
