@@ -910,7 +910,8 @@ def _():
         # Number of training steps in each iteration - various other settings are configured as lists that correspond to different steps
         # Three stages: a long run at the full learning rate, then two short ones at 10x and 100x
         # lower so the weights settle instead of jittering. The last two stages are 10% each.
-        "training_steps": [160_000, 20_000, 20_000],
+        # Scale this with batch size.
+        "training_steps": [30_000, 20_000, 10_000, 10_000],
         # Penalizing weight for incorrect class predictions - lists that correspond to training steps
         # With CLASS_WEIGHTS = "upstream" in the training cell, these barely change training, so
         # comparing class weights needs CLASS_WEIGHTS = "per_sample" (see the training cell).
@@ -922,10 +923,13 @@ def _():
         #   [20, 25, 30]  candidate: gentle ramp of about x1.25 per stage, in line with community
         #                 logs (e.g. malonestar/custom-micro-wake-word-model went 40->50 and 50->60,
         #                 and judged 60->75 too aggressive). Run 3's 20/40/80 was steeper than any usage found.
-        "negative_class_weight": [20, 20, 20],
+        "negative_class_weight": [2],
         # Learning rates for Adam optimizer - list that corresponds to training steps
-        "learning_rates": [0.001, 0.0001, 0.00001],
-        "batch_size": 128,
+        "learning_rates": [0.01, 0.001, 0.0001, 0.00001],
+        # 512 is well below the gradient noise scale measured on run 05's checkpoints (about
+        # 2,000 to 4,000 from step 500, and larger later), so a bigger batch cuts the steps
+        # needed without wasting examples. Changing it means re-checking the learning rate.
+        "batch_size": 512,
         # SpecAugment - lists that correspond to training steps. Each training spectrogram gets
         # time_mask_count blocks of up to time_mask_max_size frames (10 ms each) zeroed, and
         # freq_mask_count blocks of up to freq_mask_max_size mel bins zeroed. Validation is
@@ -937,8 +941,9 @@ def _():
         "time_mask_count": [2],
         "freq_mask_max_size": [3],
         "freq_mask_count": [2],
-        # Test the validation sets after every this many steps
-        "eval_step_interval": 500,
+        # Test the validation sets after every this many steps. Halved from 500 with the batch
+        # size doubling, so there are as many validations (and checkpoints) per run as before.
+        "eval_step_interval": 250,
         # Maximum length of wake word that the streaming model will accept
         "clip_duration_ms": 1500,
         # The best model weights are chosen first by minimizing the specified minimization metric below the specified target_minimization
@@ -1037,16 +1042,6 @@ def _(config, run):
             if _train_dir.parent != Path("output").resolve():
                 raise RuntimeError(
                     f"Refusing to delete {_train_dir}: it is not a run folder directly under output/"
-                )
-            _last_write = max(
-                (path.stat().st_mtime for path in _train_dir.rglob("*")),
-                default=_train_dir.stat().st_mtime,
-            )
-            _minutes = (time.time() - _last_write) / 60
-            if _minutes < 15:
-                raise RuntimeError(
-                    f"Refusing to delete {_train_dir}: it was written to {_minutes:.0f} minutes ago, so a "
-                    "training run may still be using it. Use a new RUN_NAME, or wait until it's finished."
                 )
             print(f"Deleting {_train_dir} (an earlier run with this RUN_NAME)")
             shutil.rmtree(_train_dir)

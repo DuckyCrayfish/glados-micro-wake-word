@@ -1,6 +1,6 @@
-batch_size: 128
+batch_size: 512
 clip_duration_ms: 1500
-eval_step_interval: 500
+eval_step_interval: 250
 features:
 - features_dir: data/generated_augmented_features
   penalty_weight: 1.0
@@ -43,15 +43,14 @@ freq_mask_count:
 freq_mask_max_size:
 - 3
 learning_rates:
+- 0.01
 - 0.001
 - 0.0001
 - 1.0e-05
 maximization_metric: average_viable_recall
 minimization_metric: null
 negative_class_weight:
-- 20
-- 20
-- 20
+- 2
 positive_class_weight:
 - 1
 target_minimization: 0.9
@@ -61,7 +60,8 @@ time_mask_max_size:
 - 5
 train_dir: output/05-fast-loader
 training_steps:
-- 160000
+- 30000
 - 20000
-- 20000
+- 10000
+- 10000
 window_step_ms: 10
