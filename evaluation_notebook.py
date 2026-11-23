@@ -28,6 +28,9 @@ def _():
     | Loss, train vs validation | Is it still learning? Is it overfitting? | both fall; validation levels off | validation rises while train keeps falling |
     | Validation metrics | Is the model improving on what `best_weights` is chosen by? | climbs, then flattens | slow downward drift; frequent collapses |
     | Validation loss ÷ train loss | How big is the generalization gap, and is it growing? | flat or slowly rising | steady climb |
+    | Precision and false negative rate | Is recall rising only because it fires more? | precision holds while misses fall | precision drops as recall rises |
+    | Ambient false activations per hour | How often does it fire on background audio? | low and steady | spikes, upward drift |
+    | Train vs validation recall and precision | Does the gap come from positives or negatives? | lines stay close | one metric's lines pull apart |
     | Wall-clock time | How fast is it training? Did it stall? | straight line | plateaus (pauses), slope drops |
     | Summary table | Final vs best checkpoint, per metric | final close to best | best was long ago and final is much worse |
     | False rejects vs false activations | The trade-off you get when picking a detection cutoff | curve hugging the lower left | curve sitting above the other model's |
@@ -298,6 +301,133 @@ def _(COLORS, data, end_labels, get, room_on_right, smooth):
 
 
     plot_gap()
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## Precision and misses on the validation set
+
+    Recall alone can be raised by firing more often, so read it next to precision. Left: precision. Right: false negative rate (1 − recall, log scale), the share of wake words missed. Precision falling while misses fall means the model is trading false activations for recall. This is the nonstreaming validation set, so for the real false-activation rate use the ambient plot below.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(COLORS, data, get, smooth):
+    def plot_precision():
+        fig, (ax_p, ax_f) = plt.subplots(1, 2, figsize=(11, 4.2))
+        fig.suptitle("Validation precision and false negative rate", x=0.01, ha="left", fontsize=13, fontweight="semibold")
+        for name in data:
+            c = COLORS[name]
+            p = get(name, "validation", "precision")
+            r = get(name, "validation", "recall")
+            if not p.empty:
+                ax_p.plot(p.index, p.values, color=c, alpha=0.2, lw=1)
+                ax_p.plot(smooth(p).index, smooth(p).values, color=c, lw=2)
+            if not r.empty:
+                fnr = (1 - r).clip(lower=1e-5)
+                ax_f.plot(fnr.index, fnr.values, color=c, alpha=0.2, lw=1)
+                ax_f.plot(smooth(fnr).index, smooth(fnr).values, color=c, lw=2)
+        ax_p.set_title("Precision", fontsize=10.5)
+        ax_f.set_title("False negative rate (log scale)", fontsize=10.5)
+        ax_f.set_yscale("log")
+        for ax in (ax_p, ax_f):
+            ax.set_xlabel("training step")
+        fig.legend(handles=[Line2D([], [], color=COLORS[n], lw=2, label=n) for n in data],
+                   loc="upper right", ncol=len(data), fontsize=9)
+        fig.tight_layout(rect=(0, 0, 1, 0.93))
+        return fig
+
+
+    plot_precision()
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## Ambient false activations per hour
+
+    The number a wake word lives or dies by: estimated false activations per hour on the background-audio validation set, at the 0.5 cutoff. Log scale, so a spike's size is visible. This is the raw value behind `recall_at_no_faph` collapsing to 0. Runs trained before this was logged have no line here.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(COLORS, data, end_labels, get, room_on_right, smooth):
+    def plot_faph():
+        fig, ax = plt.subplots(figsize=(10, 4.2))
+        items, xmax, shown = [], 0, 0
+        for name in data:
+            c = COLORS[name]
+            s = get(name, "validation", "ambient_false_positives_per_hour")
+            if s.empty:
+                continue
+            shown += 1
+            sm = smooth(s)
+            # Zero can't be drawn on a log axis; show it as a floor value.
+            ax.plot(s.index, s.clip(lower=0.01).values, color=c, alpha=0.2, lw=1)
+            ax.plot(sm.index, sm.clip(lower=0.01).values, color=c, lw=2)
+            items.append((sm.index[-1], max(sm.values[-1], 0.01), name, c))
+            xmax = max(xmax, sm.index[-1])
+        if not shown:
+            ax.text(0.5, 0.5, "No run has ambient_false_positives_per_hour logged yet",
+                    ha="center", va="center", transform=ax.transAxes)
+        else:
+            ax.set_yscale("log")
+            ax.legend(handles=[Line2D([], [], color=COLORS[i], lw=2, label=i) for i in data
+                               if not get(i, "validation", "ambient_false_positives_per_hour").empty],
+                      loc="upper right", fontsize=9)
+            room_on_right(ax, xmax, 0.2)
+            end_labels(ax, items)
+        ax.set_xlabel("training step")
+        ax.set_ylabel("false activations per hour (log; 0 drawn at 0.01)")
+        ax.set_title("Ambient false activations per hour")
+        return fig
+
+
+    plot_faph()
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## Train vs validation: where is the gap?
+
+    Recall (wake words found) and precision (alarms that were real) for train and validation. If the gap is in recall, the model is memorizing the positive clips. If it is in precision, it is memorizing the negatives. Train values are one batch, so they are noisier and drawn from the training sampling mix; compare shapes and the size of the gap, not exact levels.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(COLORS, INK_2, data, get, smooth):
+    def plot_train_val():
+        fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
+        fig.suptitle("Train vs validation", x=0.01, ha="left", fontsize=13, fontweight="semibold")
+        for ax, (tag, title) in zip(axes, [("recall", "Recall"), ("precision", "Precision")]):
+            for name in data:
+                c = COLORS[name]
+                for split, ls in (("train", (0, (4, 3))), ("validation", "-")):
+                    s = get(name, split, tag)
+                    if s.empty:
+                        continue
+                    sm = smooth(s)
+                    ax.plot(s.index, s.values, color=c, alpha=0.15, lw=1)
+                    ax.plot(sm.index, sm.values, color=c, ls=ls, lw=2)
+            ax.set_title(title, fontsize=10.5)
+            ax.set_xlabel("training step")
+        handles = [Line2D([], [], color=COLORS[n], lw=2, label=n) for n in data]
+        handles += [Line2D([], [], color=INK_2, lw=2, ls=(0, (4, 3)), label="train (one batch)"),
+                    Line2D([], [], color=INK_2, lw=2, label="validation")]
+        fig.legend(handles=handles, loc="upper right", ncol=len(handles), fontsize=9)
+        fig.tight_layout(rect=(0, 0, 1, 0.93))
+        return fig
+
+
+    plot_train_val()
     return
 
 

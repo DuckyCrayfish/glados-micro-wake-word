@@ -407,7 +407,7 @@ def train(model, config, loader, validation, class_weight_mode):
             )
 
             with validation_writer.as_default():
-                for name in ("loss", "accuracy", "recall", "precision", "recall_at_no_faph", "auc", "average_viable_recall"):
+                for name in ("loss", "accuracy", "recall", "precision", "recall_at_no_faph", "auc", "average_viable_recall", "ambient_false_positives_per_hour", "ambient_false_positives"):
                     tf.summary.scalar(name, nonstreaming_metrics[name], step=training_step)
                 validation_writer.flush()
 
